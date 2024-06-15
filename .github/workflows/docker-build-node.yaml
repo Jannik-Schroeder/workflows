@@ -2,11 +2,6 @@ name: Build and Publish Docker Image with Version Numbers of Node.js
 
 on:
   workflow_call:
-    inputs:
-      branches:
-        required: true
-        type: string
-        description: "Branches to trigger the workflow"
     secrets:
       GITHUB_TOKEN:
         required: true
