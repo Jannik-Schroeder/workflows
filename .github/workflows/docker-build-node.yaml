@@ -9,7 +9,10 @@ env:
 jobs:
   image:
     runs-on: ubuntu-latest
-    permissions: write-all
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
     outputs:
       version: ${{ steps.package_version.outputs.version }}
 
