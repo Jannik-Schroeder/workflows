@@ -1,5 +1,3 @@
-name: Build and Publish Docker Image with Version Numbers of Node.js
-
 on:
   workflow_call:
     secrets:
