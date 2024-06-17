@@ -24,10 +24,6 @@ on:
         description: "Image name to update the file with"
         required: true
         type: string
-      username:
-        description: "GitHub username"
-        required: true
-        type: string
     secrets:
       PRIVATE_REPO_KEY:
         description: "Personal Access Token for private repo access"
@@ -51,7 +47,7 @@ jobs:
     steps:
       - name: Checkout private repository using PAT
         run: |
-          git clone https://${{ inputs.username }}:${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
+          git clone https://${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
         env:
           GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_KEY }}
 
@@ -60,7 +56,7 @@ jobs:
         run: |
           cd repo
           echo "Checking current version in file: ${FILE}"
-          CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:)[^\s"]+' ${FILE})
+          CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${IMAGE_NAME}:)[^\s"]+' ${FILE})
           echo "Current version found: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
           if [ "$CURRENT_VERSION" = "${VERSION}" ]; then
@@ -72,7 +68,7 @@ jobs:
         if: env.current_version != inputs.version
         run: |
           cd repo
-          sed -i "s|ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:[^\"]*|ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:${VERSION}|" ${FILE}
+          sed -i "s|ghcr.io/${IMAGE_NAME}:[^\"]*|ghcr.io/${IMAGE_NAME}:${VERSION}|" ${FILE}
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add ${FILE}
