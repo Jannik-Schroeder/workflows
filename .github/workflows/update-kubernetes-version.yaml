@@ -45,6 +45,7 @@ jobs:
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Kubernetes deployment file
         run: |
