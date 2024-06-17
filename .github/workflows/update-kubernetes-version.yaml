@@ -44,21 +44,6 @@ jobs:
         run: |
           git clone https://${{ inputs.username }}:${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
 
-      - name: Check if new version is different
-        id: check_version
-        run: |
-          cd repo
-          echo "Checking current version in file: ${{ inputs.file }}"
-          cat ${{ inputs.file }}
-          CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${{ inputs.image }}:)[^\s"]+' ${{ inputs.file }})
-          echo "Current version found: $CURRENT_VERSION"
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
-          echo "Expected new version: ${{ inputs.version }}"
-          if [ "$CURRENT_VERSION" = "${{ inputs.version }}" ]; then
-            echo "The new version is the same as the current version. Exiting..."
-            exit 0
-          fi
-
       - name: Update Kubernetes deployment file
         if: env.current_version != inputs.version
         run: |
