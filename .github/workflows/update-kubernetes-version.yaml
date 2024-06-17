@@ -33,18 +33,9 @@ on:
         description: "Personal Access Token for private repo access"
         required: true
 
-env:
-  REGISTRY: ghcr.io
-
 jobs:
   image:
     runs-on: ubuntu-latest
-    env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ inputs.image }}
-      VERSION: ${{ inputs.version }}
-      FILE: ${{ inputs.file }}
-      BRANCH: ${{ inputs.branch }}
     permissions:
       contents: write
 
@@ -57,13 +48,13 @@ jobs:
         id: check_version
         run: |
           cd repo
-          echo "Checking current version in file: ${FILE}"
-          cat ${FILE}
-          CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${{ env.IMAGE_NAME }}:)[^\s"]+' ${FILE})
+          echo "Checking current version in file: ${{ inputs.file }}"
+          cat ${{ inputs.file }}
+          CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${{ inputs.image }}:)[^\s"]+' ${{ inputs.file }})
           echo "Current version found: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
-          echo "Expected new version: ${VERSION}"
-          if [ "$CURRENT_VERSION" = "${VERSION}" ]; then
+          echo "Expected new version: ${{ inputs.version }}"
+          if [ "$CURRENT_VERSION" = "${{ inputs.version }}" ]; then
             echo "The new version is the same as the current version. Exiting..."
             exit 0
           fi
@@ -73,11 +64,11 @@ jobs:
         run: |
           cd repo
           echo "Updating the file with sed command"
-          sed -i "s|ghcr.io/${{ env.IMAGE_NAME }}:[^\"]*|ghcr.io/${{ env.IMAGE_NAME }}:${VERSION}|" ${FILE}
+          sed -i "s|ghcr.io/${{ inputs.image }}:[^\"]*|ghcr.io/${{ inputs.image }}:${{ inputs.version }}|" ${{ inputs.file }}
           echo "sed command executed. Displaying the updated file:"
-          cat ${FILE}
+          cat ${{ inputs.file }}
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add ${FILE}
-          git commit -m "Update deployment image version to ${VERSION} [skip ci]"
-          git push origin HEAD:${BRANCH}
+          git add ${{ inputs.file }}
+          git commit -m "Update deployment image version to ${{ inputs.version }} [skip ci]"
+          git push origin HEAD:${{ inputs.branch }}
