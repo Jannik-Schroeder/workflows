@@ -59,7 +59,9 @@ jobs:
         id: check_version
         run: |
           cd repo
+          echo "Checking current version in file: ${FILE}"
           CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:)[^\s"]+' ${FILE})
+          echo "Current version found: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
           if [ "$CURRENT_VERSION" = "${VERSION}" ]; then
             echo "The new version is the same as the current version. Exiting..."
@@ -67,7 +69,7 @@ jobs:
           fi
 
       - name: Update Kubernetes deployment file
-        if: steps.check_version.outputs.current_version != inputs.version
+        if: env.current_version != inputs.version
         run: |
           cd repo
           sed -i "s|ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:[^\"]*|ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:${VERSION}|" ${FILE}
