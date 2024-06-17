@@ -39,7 +39,6 @@ jobs:
       BRANCH: ${{ inputs.branch }}
     permissions:
       contents: write
-      repository-projects: write
 
     steps:
       - name: Checkout repository
