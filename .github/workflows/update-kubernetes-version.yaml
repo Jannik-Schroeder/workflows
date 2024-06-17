@@ -45,19 +45,19 @@ jobs:
       contents: write
 
     steps:
+      - name: Debug repository info
+        run: |
+          echo "Repository: ${{ inputs.repository }}"
+          echo "Branch: ${{ inputs.branch }}"
+          echo "Token: ${{ secrets.PRIVATE_REPO_KEY }}"
+          git ls-remote https://github.com/${{ inputs.repository }}.git
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.branch }}
           token: ${{ secrets.PRIVATE_REPO_KEY }}
-
-      - name: Debug repository info
-        run: |
-          echo "Repository: ${{ inputs.repository }}"
-          echo "Branch: ${{ inputs.branch }}"
-          echo "Token: ${{ secrets.GITHUB_TOKEN }}"
-          git ls-remote https://github.com/${{ inputs.repository }}.git
 
       - name: Update Kubernetes deployment file
         run: |
