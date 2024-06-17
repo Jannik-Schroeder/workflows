@@ -48,6 +48,13 @@ jobs:
           ref: ${{ inputs.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug repository info
+        run: |
+          echo "Repository: ${{ inputs.repository }}"
+          echo "Branch: ${{ inputs.branch }}"
+          echo "Token: ${{ secrets.GITHUB_TOKEN }}"
+          git ls-remote https://github.com/${{ inputs.repository }}.git
+
       - name: Update Kubernetes deployment file
         run: |
           sed -i "s|${REGISTRY}/${IMAGE_NAME}:[^\"]*|${REGISTRY}/${IMAGE_NAME}:${VERSION}|" ${FILE}
