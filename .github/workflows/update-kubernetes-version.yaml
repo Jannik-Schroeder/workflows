@@ -52,15 +52,19 @@ jobs:
       - name: Checkout private repository using PAT
         run: |
           git clone https://${{ inputs.username }}:${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_KEY }}
 
       - name: Check if new version is different
         id: check_version
         run: |
           cd repo
           echo "Checking current version in file: ${FILE}"
+          cat ${FILE}
           CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${IMAGE_NAME}:)[^\s"]+' ${FILE})
           echo "Current version found: $CURRENT_VERSION"
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
+          echo "Expected new version: ${VERSION}"
           if [ "$CURRENT_VERSION" = "${VERSION}" ]; then
             echo "The new version is the same as the current version. Exiting..."
             exit 0
@@ -70,7 +74,10 @@ jobs:
         if: env.current_version != inputs.version
         run: |
           cd repo
+          echo "Updating the file with sed command"
           sed -i "s|ghcr.io/${IMAGE_NAME}:[^\"]*|ghcr.io/${IMAGE_NAME}:${VERSION}|" ${FILE}
+          echo "sed command executed. Displaying the updated file:"
+          cat ${FILE}
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add ${FILE}
