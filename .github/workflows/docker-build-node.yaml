@@ -2,6 +2,11 @@ name: Build and Publish Docker Image with Version Numbers of Node.js
 
 on:
   workflow_call:
+    outputs:
+      version:
+        description: "Node Version of the Project"
+        value: ${{ jobs.image.outputs.version }}
+    
 
 env:
   REGISTRY: ghcr.io
