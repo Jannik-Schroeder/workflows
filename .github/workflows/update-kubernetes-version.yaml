@@ -1,0 +1,62 @@
+name: Update a file with the new Kubernetes version
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: "Repository to update format: owner/repo"
+        required: true
+        type: string
+      branch:
+        description: "Branch to update e.g. main, master, dev"
+        required: true
+        default: main
+        type: string
+      file:
+        description: "Path to the file to update eg. ./k8s/deployment.yaml"
+        required: true
+        type: string
+      version:
+        description: "New version to update the file with"
+        required: true
+        type: string
+      image:
+        description: "Image name to update the file with"
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ inputs.image }}
+      VERSION: ${{ inputs.version }}
+      FILE: ${{ inputs.file }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repository }}
+          ref: ${{ inputs.branch }}
+
+      - name: Update Kubernetes deployment file
+        run: |
+          sed -i "s|${REGISTRY}/${IMAGE_NAME}:[^\"]*|${REGISTRY}/${IMAGE_NAME}:${VERSION}|" ${FILE}
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git stash # Save changes
+          git pull origin dev # Pull latest changes
+          git stash pop # Apply changes
+          git add ${FILE}
+          git commit -m "Update deployment image version to ${VERSION} [skip ci]"
+          git push origin HEAD:dev
