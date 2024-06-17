@@ -36,6 +36,7 @@ jobs:
       IMAGE_NAME: ${{ inputs.image }}
       VERSION: ${{ inputs.version }}
       FILE: ${{ inputs.file }}
+      BRANCH: ${{ inputs.branch }}
     permissions:
       contents: write
 
@@ -55,9 +56,6 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git stash # Save changes
-          git pull origin dev # Pull latest changes
-          git stash pop # Apply changes
           git add ${FILE}
           git commit -m "Update deployment image version to ${VERSION} [skip ci]"
-          git push origin HEAD:dev
+          git push origin HEAD:${BRANCH}
