@@ -14,7 +14,7 @@ jobs:
       packages: write
       id-token: write
     outputs:
-      version: ${{ steps.package_version.outputs.version }}
+      version: ${{ steps.extract_version.outputs.version }}
 
     steps:
       - name: Checkout repository
@@ -32,14 +32,14 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Extract package version
-        id: package_version
+        id: extract_version
         run: |
           version=$(node -p "require('./package.json').version")
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Use package version
         run: |
-          PACKAGE_VERSION=${{ steps.package_version.outputs.version }}
+          PACKAGE_VERSION=${{ steps.extract_version.outputs.version }}
           echo "Using package version: $PACKAGE_VERSION"
 
       - name: Log in to the Container registry
@@ -55,7 +55,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}
           tags: |
-            type=raw,value=${{ steps.package_version.outputs.version }}
+            type=raw,value=${{ steps.extract_version.outputs.version }}
             type=raw,value=latest
 
       - name: Build and push Docker image
