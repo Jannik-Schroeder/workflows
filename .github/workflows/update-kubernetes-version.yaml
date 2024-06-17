@@ -24,6 +24,10 @@ on:
         description: "Image name to update the file with"
         required: true
         type: string
+    secrets:
+      PRIVATE_REPO_KEY:
+        description: "Private repository key"
+        required: true
 
 env:
   REGISTRY: ghcr.io
@@ -46,7 +50,7 @@ jobs:
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.branch }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PRIVATE_REPO_KEY }}
 
       - name: Debug repository info
         run: |
