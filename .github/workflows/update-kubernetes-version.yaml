@@ -24,6 +24,10 @@ on:
         description: "Image name to update the file with"
         required: true
         type: string
+      username:
+        description: "GitHub username"
+        required: true
+        type: string
     secrets:
       PRIVATE_REPO_KEY:
         description: "Personal Access Token for private repo access"
@@ -47,9 +51,7 @@ jobs:
     steps:
       - name: Checkout private repository using PAT
         run: |
-          git clone https://${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
-        env:
-          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_KEY }}
+          git clone https://${{ inputs.username }}:${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
 
       - name: Check if new version is different
         id: check_version
