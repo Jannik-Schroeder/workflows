@@ -24,9 +24,13 @@ on:
         description: "Image name to update the file with"
         required: true
         type: string
+      username:
+        description: "GitHub username"
+        required: true
+        type: string
     secrets:
       PRIVATE_REPO_KEY:
-        description: "Private repository key"
+        description: "Personal Access Token for private repo access"
         required: true
 
 env:
@@ -45,26 +49,16 @@ jobs:
       contents: write
 
     steps:
-      - name: Debug repository info
+      - name: Checkout private repository using PAT
         run: |
-          echo "Repository: ${{ inputs.repository }}"
-          echo "Branch: ${{ inputs.branch }}"
-          echo "Token: ${{ secrets.PRIVATE_REPO_KEY }}"
-          git ls-remote https://github.com/${{ inputs.repository }}.git
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ inputs.repository }}
-          ref: ${{ inputs.branch }}
-          token: ${{ secrets.PRIVATE_REPO_KEY }}
+          git clone https://${{ inputs.username }}:${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_KEY }}
 
       - name: Update Kubernetes deployment file
         run: |
+          cd repo
           sed -i "s|${REGISTRY}/${IMAGE_NAME}:[^\"]*|${REGISTRY}/${IMAGE_NAME}:${VERSION}|" ${FILE}
-
-      - name: Commit and push changes
-        run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add ${FILE}
