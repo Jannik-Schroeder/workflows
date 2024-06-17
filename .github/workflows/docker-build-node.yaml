@@ -15,7 +15,7 @@ jobs:
       id-token: write
     outputs:
       version:
-        description: 'The version of the package'
+        description: "The version of the package"
         value: ${{ steps.package_version.outputs.version }}
 
     steps:
