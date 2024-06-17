@@ -59,22 +59,18 @@ jobs:
         id: check_version
         run: |
           cd repo
-          if grep -q 'image: ${REGISTRY}/${IMAGE_NAME}:' ${FILE}; then
-            CURRENT_VERSION=$(grep 'image: ${REGISTRY}/${IMAGE_NAME}:' ${FILE} | sed 's/.*://;s/"//g')
-            echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
-            if [ "$CURRENT_VERSION" = "${VERSION}" ]; then
-              echo "The new version is the same as the current version. Exiting..."
-              exit 0
-            fi
-          else
-            echo "No current version found. Proceeding with the update."
+          CURRENT_VERSION=$(grep -oP '(?<=image: ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:)[^\s"]+' ${FILE})
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_ENV
+          if [ "$CURRENT_VERSION" = "${VERSION}" ]; then
+            echo "The new version is the same as the current version. Exiting..."
+            exit 0
           fi
 
       - name: Update Kubernetes deployment file
         if: steps.check_version.outputs.current_version != inputs.version
         run: |
           cd repo
-          sed -i "s|${REGISTRY}/${IMAGE_NAME}:[^\"]*|${REGISTRY}/${IMAGE_NAME}:${VERSION}|" ${FILE}
+          sed -i "s|ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:[^\"]*|ghcr.io/${{ inputs.username }}/${IMAGE_NAME}:${VERSION}|" ${FILE}
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add ${FILE}
