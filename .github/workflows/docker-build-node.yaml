@@ -14,7 +14,8 @@ jobs:
       packages: write
       id-token: write
     outputs:
-      version: ${{ steps.extract_version.outputs.version }}
+      version:
+        value: ${{ steps.extract_version.outputs.version }}
 
     steps:
       - name: Checkout repository
