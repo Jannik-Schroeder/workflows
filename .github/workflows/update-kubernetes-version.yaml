@@ -48,7 +48,7 @@ jobs:
         if: env.current_version != inputs.version
         run: |
 
-          echo "Updating deployment file ${FILE} with image ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
+          echo "Updating ${{ inputs.file }} in ${{ inputs.repository }} repository on branch ${{ inputs.branch }} with image ${{ inputs.image }} and version ${{ inputs.version }}"
           cd repo
           echo "Updating the file with sed command"
           sed -i "s|ghcr.io/${{ inputs.image }}:[^\"]*|ghcr.io/${{ inputs.image }}:${{ inputs.version }}|" ${{ inputs.file }}
