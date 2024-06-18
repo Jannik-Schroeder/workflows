@@ -57,6 +57,8 @@ jobs:
 
       - name: Update Kubernetes deployment file
         run: |
+
+          echo "Updating deployment file ${FILE} with image ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
           cd repo
           sed -i "s|${REGISTRY}/${IMAGE_NAME}:[^\"]*|${REGISTRY}/${IMAGE_NAME}:${VERSION}|" ${FILE}
           git config user.name "github-actions"
