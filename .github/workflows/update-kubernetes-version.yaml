@@ -33,18 +33,9 @@ on:
         description: "Personal Access Token for private repo access"
         required: true
 
-env:
-  REGISTRY: ghcr.io
-
 jobs:
   image:
     runs-on: ubuntu-latest
-    env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ inputs.image }}
-      VERSION: ${{ inputs.version }}
-      FILE: ${{ inputs.file }}
-      BRANCH: ${{ inputs.branch }}
     permissions:
       contents: write
 
@@ -52,17 +43,19 @@ jobs:
       - name: Checkout private repository using PAT
         run: |
           git clone https://${{ inputs.username }}:${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
-        env:
-          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_KEY }}
 
       - name: Update Kubernetes deployment file
+        if: env.current_version != inputs.version
         run: |
 
           echo "Updating deployment file ${FILE} with image ${REGISTRY}/${IMAGE_NAME}:${VERSION}"
           cd repo
-          sed -i "s|${REGISTRY}/${IMAGE_NAME}:[^\"]*|${REGISTRY}/${IMAGE_NAME}:${VERSION}|" ${FILE}
+          echo "Updating the file with sed command"
+          sed -i "s|ghcr.io/${{ inputs.image }}:[^\"]*|ghcr.io/${{ inputs.image }}:${{ inputs.version }}|" ${{ inputs.file }}
+          echo "sed command executed. Displaying the updated file:"
+          cat ${{ inputs.file }}
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add ${FILE}
-          git commit -m "Update deployment image version to ${VERSION} [skip ci]"
-          git push origin HEAD:${BRANCH}
+          git add ${{ inputs.file }}
+          git commit -m "Update deployment image version to ${{ inputs.version }} [skip ci]"
+          git push origin HEAD:${{ inputs.branch }}
