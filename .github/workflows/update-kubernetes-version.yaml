@@ -28,6 +28,11 @@ on:
         description: "GitHub username"
         required: true
         type: string
+      kubernetes_apply:
+        description: "Apply the changes to the Kubernetes cluster"
+        required: false
+        default: false
+        type: boolean
     secrets:
       PRIVATE_REPO_KEY:
         description: "Personal Access Token for private repo access"
@@ -72,3 +77,10 @@ jobs:
           git add ${{ inputs.file }}
           git commit -m "Update deployment image version to ${{ inputs.version }} [skip ci]"
           git push origin HEAD:${{ inputs.branch }}
+          
+      - name: Apply changes to Kubernetes cluster
+        if: env.current_version != inputs.version && inputs.kubernetes_apply == true
+        run: |
+          echo "Applying changes to the Kubernetes cluster"
+          cd repo && kubectl apply -f ${{ inputs.file }}
+          echo "Changes applied to the Kubernetes cluster"
