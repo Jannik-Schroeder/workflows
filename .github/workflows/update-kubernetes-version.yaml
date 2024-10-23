@@ -33,6 +33,11 @@ on:
         required: false
         default: false
         type: boolean
+      runner:
+        description: "Runner to use for the job"
+        required: false
+        default: "ubuntu-latest"
+        type: string
     secrets:
       PRIVATE_REPO_KEY:
         description: "Personal Access Token for private repo access"
@@ -40,7 +45,7 @@ on:
 
 jobs:
   image:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     permissions:
       contents: write
 
