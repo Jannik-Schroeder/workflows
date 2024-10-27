@@ -50,6 +50,12 @@ jobs:
       contents: write
 
     steps:
+      - name: Remove existing repo directory
+        run: |
+          if [ -d "repo" ]; then
+            rm -rf repo
+          fi
+    
       - name: Checkout private repository using PAT
         run: |
           git clone https://${{ inputs.username }}:${{ secrets.PRIVATE_REPO_KEY }}@github.com/${{ inputs.repository }}.git repo
