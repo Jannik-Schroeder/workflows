@@ -46,7 +46,21 @@ jobs:
           test "$(gh api "$package_url" --jq .visibility)" = private
           printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           docker push "$IMAGE:$GITHUB_SHA"
-          for tag in "$APP_VERSION" latest; do
-            docker tag "$IMAGE:$GITHUB_SHA" "$IMAGE:$tag"
-            docker push "$IMAGE:$tag"
-          done
+          tags=$(skopeo list-tags "docker://$IMAGE" | jq -r '.Tags[]')
+          stable=$(printf '%s\n' "$tags" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)
+          if [[ -n "$stable" ]] && dpkg --compare-versions "$APP_VERSION" lt "$stable"; then
+            echo "Commit image published. A newer application version is already available."
+            exit 0
+          fi
+          if grep -Fxq "$APP_VERSION" <<< "$tags"; then
+            previous=$(skopeo inspect "docker://$IMAGE:$APP_VERSION")
+            if [[ "$(jq -r '.Labels["org.opencontainers.image.revision"] // ""' <<< "$previous")" != "$GITHUB_SHA" ]]; then
+              echo "Commit image published. This application version already has its original release."
+              exit 0
+            fi
+          else
+            docker tag "$IMAGE:$GITHUB_SHA" "$IMAGE:$APP_VERSION"
+            docker push "$IMAGE:$APP_VERSION"
+          fi
+          skopeo copy --all --preserve-digests "docker://$IMAGE:$APP_VERSION" "docker://$IMAGE:latest"
+          test "$(skopeo inspect --format '{{.Digest}}' "docker://$IMAGE:$APP_VERSION")" = "$(skopeo inspect --format '{{.Digest}}' "docker://$IMAGE:latest")"
